@@ -9,18 +9,18 @@ import bus from '../../dxmodules/dxEventBus.js'
 import mqttService from './mqttService.js'
 import logger from '../../dxmodules/dxLogger.js'
 const configService = {}
-// 匹配以点分十进制形式表示的 IP 地址，例如：192.168.0.1。
-const ipCheck = v => /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(v)
+// Match IP addresses in dot-decimal notation, e.g.: 192.168.0.1.
+const ipCheck = v => /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(v)
 const ipOrDomainCheckWithPort = v => /^(?:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(:\d{1,5})?$/.test(v);
 
-//正整数
+// Positive integer
 const regpCheck = v => /^[1-9]\d*$/.test(v)
-//非负整数
+// Non-negative integer
 const regnCheck = v => /^([1-9]\d*|0{1})$/.test(v)
 /**
- * 所有支持的配置项的检验规则以及设置成功后的回调
- * rule：校验规则，返回true校验成功，false校验失败
- * callback：配置修改触发回调
+ * Verification rules for all supported configuration items and the callback after successful setting
+ * rule: verification rule, returns true for successful verification, false for failed verification
+ * callback: callback triggered after configuration modification
  */
 const supported = {
 
@@ -46,7 +46,7 @@ const supported = {
         timeout: { rule: regpCheck },
     },
     net: {
-        // 根据组件参数
+        // Based on component parameters
         type: { rule: v => [0, 1, 2, 4].includes(v) },
         dhcp: { rule: v => [1, 2, 3].includes(v) },
         ip: { rule: ipCheck },
@@ -58,7 +58,7 @@ const supported = {
         psk: { rule: v => typeof v == 'string' },
     },
     ntp: {
-        // ntp开关
+        // ntp switch
         ntp: { rule: v => [0, 1].includes(v) },
         server: { rule: ipCheck },
         gmt: { rule: v => typeof v == 'number' && v >= 0 && v <= 24, callback: v => ntp.updateGmt(v) },
@@ -103,19 +103,19 @@ const supported = {
         passwordAccess: { rule: v => [0, 1].includes(v) },
     }
 }
-// 需要重启的配置
+// Configurations that require reboot
 const needReboot = ["sys.nfc", "sys.nfcIdentityCardEnable", "ntp"]
 configService.needReboot = needReboot
 
-//修改模式
+// Modify mode
 function setMode(params) {
     common.systemWithRes(`echo 'app' > /etc/.app_v1`, 2)
     common.setMode(params)
 }
 /**
- * 配置json校验并保存
- * @param {object} data 配置json对象
- * @returns true(校验并保存成功)/string(错误信息)
+ * Configuration JSON verification and saving
+ * @param {object} data Configuration JSON object
+ * @returns true (verification and save successful) / string (error message)
  */
 configService.configVerifyAndSave = function (data) {
     let netFlag = false
@@ -133,7 +133,7 @@ configService.configVerifyAndSave = function (data) {
         }
         const item = data[key];
         if (typeof item != 'object') {
-            // 必须是一个组
+            // Must be a group
             continue
         }
         if (needReboot.includes(key)) {
@@ -149,10 +149,10 @@ configService.configVerifyAndSave = function (data) {
                 isReboot = true
             }
             if (!option.rule || option.rule(value)) {
-                // 没有校验规则默认校验通过
+                // If there is no verification rule, it defaults to successful verification
                 config.set(key + "." + subKey, value)
                 if (option.callback) {
-                    // 执行配置设置回调
+                    // Execute configuration setting callback
                     option.callback(value)
                 }
             } else {
@@ -161,27 +161,27 @@ configService.configVerifyAndSave = function (data) {
         }
     }
     config.save()
-    // 检查需要重启的配置，3秒后重启
+    // Check configurations that require reboot, reboot after 3 seconds
     if (isReboot) {
         driver.screen.upgrade({ title: "confirm.restartDevice", content: "confirm.restartDeviceDis" })
         common.asyncReboot(3)
     }
     if (netFlag) {
-        //等待 1 秒 因为需要返回 mqtt
+        // Wait 1 second because mqtt needs to return
         std.setTimeout(() => {
             bus.fire("switchNetworkType", config.get("net.type"))
         }, 1000);
     }
     if (mqttFlag) {
         let option = { mqttAddr: config.get("mqtt.addr"), clientId: config.get('mqtt.clientId') + std.genRandomStr(3), subs: mqttService.getTopics(), username: config.get("mqtt.username"), password: config.get("mqtt.password"), qos: config.get("mqtt.qos"), willTopic: config.get("mqtt.willTopic"), willMessage: JSON.stringify({ "uuid": config.get("sys.uuid") }) }
-        logger.info("重启mqtt", JSON.stringify(option))
-        //销毁 mqtt 重新 init
+        logger.info("Restarting mqtt", JSON.stringify(option))
+        // Destroy mqtt and re-initialize
         bus.fire(mqtt.RECONNECT, option)
     }
     return true
 }
 
-// 判空
+// Check for null or undefined
 function isEmpty(value) {
     return value === undefined || value === null
 }

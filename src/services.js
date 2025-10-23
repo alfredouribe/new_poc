@@ -54,7 +54,7 @@ pool.callback((data) => {
             break;
         case mqtt.CONNECTED_CHANGED:
             bus.fire("mqttStatus", msg)
-            // mqtt连接上报
+            // connection inform for mqtt
             if (msg == "connected") {
                 mqttService.report()
             }

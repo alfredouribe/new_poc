@@ -10,27 +10,27 @@ const faceService = {}
 
 faceService.receiveMsg = function (data) {
     logger.info('[faceService] receiveMsg :' + JSON.stringify(data))
-    //代表是锁屏和息屏
+    // Represents screen lock and screen off
     bus.fire("exitIdle")
 
     switch (data.type) {
         case "register":
-            // 注册人脸
+            // Register face
             for (let i = 0; i < data.faces.length; i++) {
                 const element = data.faces[i];
                 bus.fire("beginAddFace", element)
             }
             break;
         case "compare":
-            // 显示姓名，代表有注册过人脸，但是权限不一定有效，需要进一步认证
+            // Display name, meaning face has been registered, but permission may not be valid, requires further authentication
             for (let i = 0; i < data.faces.length; i++) {
                 const element = data.faces[i];
                 bus.fire("trackResult", { id: element.id, result: element.result, userId: element.userId })
                 if (element.result) {
-                    // 人脸相似度验证通过
+                    // Face similarity verification passed
                     let ret = sqliteService.d1_person.find({ userId: element.userId })
                     if (dxMap.get("UI").get("faceAuthStart") == "Y") {
-                        //正在人脸登录
+                        // Currently in face login
                         if (JSON.parse(ret[0].extra).type != 0) {
                             bus.fire("faceAuthResult", true)
                         } else {
@@ -46,16 +46,16 @@ faceService.receiveMsg = function (data) {
                             driver.alsa.ttsPlay(ret[0].name)
                             break;
                         case 2:
-                            driver.alsa.ttsPlay(config.get("face.voiceModeDate") ? config.get("face.voiceModeDate") : "欢迎光临")
+                            driver.alsa.ttsPlay(config.get("face.voiceModeDate") ? config.get("face.voiceModeDate") : "Welcome") // Translated "欢迎光临" to "Welcome"
                             break;
                         default:
                             break;
                     }
 
-                    // 通行认证处理
+                    // Access authentication handling
                     bus.fire("access", { data: { type: "300", code: element.userId }, fileName: element.fileName })
                 } else {
-                    // 人脸相似度验证失败
+                    // Face similarity verification failed
                     if (dxMap.get("UI").get("faceAuthStart") == "Y") {
                         bus.fire("faceAuthResult", false)
                     } else {
@@ -83,20 +83,20 @@ faceService.receiveMsg = function (data) {
 
 faceService.regErrorEnum = {
     "callback": {
-        title: "注册回调状态枚举",
+        title: "Registration Callback Status Enum", // Translated "注册回调状态枚举"
         "-1": "faceService.contrastFailure",
         "-2": "faceService.scalingFailure",
         "-3": "faceService.failedToSavePicture",
         "-4": "faceService.convertToBase64Fail",
     },
     "feature": {
-        title: "特征值注册状态枚举",
+        title: "Feature Value Registration Status Enum", // Translated "特征值注册状态枚举"
         "-1": "faceService.base64DecodingFail",
         "-10": "faceService.contrastFailure",
         "-11": "faceService.similarityOverheight",
     },
     "picture": {
-        title: "图片注册状态枚举",
+        title: "Picture Registration Status Enum", // Translated "图片注册状态枚举"
         "-1": "faceService.fileDoesNotExist",
         "-2": "faceService.theImageFormatIsNotSupported",
         "-3": "faceService.pictureReadFailure",

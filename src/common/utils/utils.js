@@ -3,24 +3,24 @@ import common from '../../../dxmodules/dxCommon.js'
 import logger from "../../../dxmodules/dxLogger.js"
 const utils = {}
 
-// 获取url文件下载大小（字节数）
+// Get the downloadable file size from the URL (in bytes)
 utils.getUrlFileSize = function (url) {
     let actualSize = common.systemWithRes(`wget --spider -S ${url} 2>&1 | grep 'Length' | awk '{print $2}'`, 100).match(/\d+/g)
     return actualSize ? parseInt(actualSize) : 0
 }
-// 判断是否为""/null/undefined
+// Check if it is ""/null/undefined
 utils.isEmpty = function (str) {
     return (str === "" || str === null || str === undefined)
 }
 /**
- * 解析字符串改为 json，注意value内不能有"号
+ * Parse string and convert it to JSON, note that the value cannot contain a " character
  * @param {string} inputString 
  * @returns 
  */
 utils.parseString = function (inputString) {
-    // 获取{}及其之间的内容
+    // Get {} and the content between them
     inputString = inputString.slice(inputString.indexOf("{"), inputString.lastIndexOf("}") + 1)
-    // key=value正则，key是\w+（字母数字下划线，区别大小写），=两边可有空格，value是\w+或相邻两个"之间的内容（包含"）
+    // key=value regex, key is \w+ (alphanumeric underscore, case-sensitive), can have spaces around =, value is \w+ or content between two adjacent " (including ")
     const keyValueRegex = /(\w+)\s*=\s*("[^"]*"|\w+(\.\w+)?)/g;
     let jsonObject = {};
     let match;
@@ -28,17 +28,17 @@ utils.parseString = function (inputString) {
         let key = match[1];
         let value = match[2]
         if (/^\d+$/.test(value)) {
-            // 数字
+            // Integer
             value = parseInt(value)
         } else if (/^\d+\.\d+$/.test(value)) {
-            // 小数
+            // Decimal
             value = parseFloat(value)
         } else if (value == 'true') {
             value = true
         } else if (value == 'false') {
             value = false
         } else {
-            // 字符串
+            // String
             value = value.replace(/"/g, '').trim()
         }
         jsonObject[key] = value;
@@ -47,49 +47,49 @@ utils.parseString = function (inputString) {
 }
 
 /**
- * 等待下载结果，注意超时时间不得超过喂狗时间，否则下载慢会重启
- * @param {string} update_addr 下载地址
- * @param {string} downloadPath 存储路径
- * @param {number} timeout 超时
- * @param {string} update_md5 md5校验
- * @param {number} fileSize 文件大小
- * @returns 下载结果(bool)
+ * Wait for download result, note that the timeout must not exceed the watchdog time, otherwise slow download will cause a reboot
+ * @param {string} update_addr Download address
+ * @param {string} downloadPath Storage path
+ * @param {number} timeout Timeout
+ * @param {string} update_md5 md5 checksum
+ * @param {number} fileSize File size
+ * @returns Download result (boolean)
  */
 utils.waitDownload = function (update_addr, downloadPath, timeout, update_md5, fileSize) {
-    // 删除原文件
+    // Delete original file
     common.systemBrief(`rm -rf "${downloadPath}"`)
-    // 异步下载
+    // Asynchronous download
     common.systemBrief(`wget -c "${update_addr}" -O "${downloadPath}" &`)
     let startTime = new Date().getTime()
     while (true) {
-        // 计算已下载的文件大小
+        // Calculate the size of the downloaded file
         let size = parseInt(common.systemWithRes(`file="${downloadPath}"; [ -e "$file" ] && wc -c "$file" | awk '{print $1}' || echo "0"`, 100).split(/\s/g)[0])
-        // 如果相等，则下载成功
+        // If equal, download successful
         if (size == fileSize) {
             let ret = common.md5HashFile(downloadPath)
             if (ret) {
                 let md5 = ret.map(v => v.toString(16).padStart(2, '0')).join('')
                 if (md5 == update_md5) {
-                    // md5校验成功返回true
+                    // md5 checksum successful, return true
                     return true
                 }
             }
             common.systemBrief(`rm -rf "${downloadPath}"`)
-            // md5校验失败返回false
+            // md5 checksum failed, return false
             return false
         }
-        // 如果下载超时，删除下载的文件并且重启，停止异步继续下载
+        // If download times out, delete the downloaded file and reboot, stop asynchronous download continuation
         if (new Date().getTime() - startTime > timeout) {
             vf203.pwm.fail()
             common.systemBrief(`rm -rf "${downloadPath}"`)
-            // 立即重启
+            // Immediate reboot
             this.restart()
             return false
         }
         os.sleep(100)
     }
 }
-// 立即重启
+// Immediate reboot
 utils.restart = function () {
     common.systemBrief("reboot -f")
 }

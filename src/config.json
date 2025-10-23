@@ -1,23 +1,23 @@
 {
     // CN/EN
     "base.language": "EN",
-    // 管理员密码
+    // Administrator password
     "base.password": "1",
-    //是否第一次登录后台 0 未登录 1 已登录
+    // Whether it's the first time logging into the backend 0 Not logged in 1 Logged in
     "base.firstLogin": 0,
-    // 人脸识别相似度
+    // Face recognition similarity
     "face.similarity": 0.6,
-    // 活体检测
+    // Liveness detection
     "face.livenessOff": 1,
-    // 活体检测阈值（0-100）
+    // Liveness detection threshold (0-100)
     "face.livenessVal": 0,
     "face.showNir": 1,
     "face.detectMask": 0,
-    // ["无语音", "播放请先注册", "播放陌生人你好"]
+    // ["No voice", "Play please register first", "Play hello stranger"]
     "face.stranger": 1,
-    // ["无语音", "播放名字", "播放问候语"]
+    // ["No voice", "Play name", "Play greeting"]
     "face.voiceMode": 1,
-    "face.voiceModeDate": "欢迎光临",
+    "face.voiceModeDate": "Welcome",
     "mqtt.addr": "101.200.139.97:51883",
     "mqtt.clientId": "",
     "mqtt.username": "admin",
@@ -36,13 +36,13 @@
     "net.mask": "255.255.255.0",
     "net.dns": "218.4.4.4,218.2.2.2",
     "net.mac": "",
-    // 0关闭，1定时同步
+    // 0 off, 1 scheduled sync
     "ntp.ntp": 2,
     "ntp.server": "182.92.12.11",
-    // 定时同步，24小时制
+    // Scheduled sync, 24-hour format
     "ntp.hour": 3,
     "ntp.gmt": 8,
-     // mac地址
+     // mac address
     "sys.mac": "",
     "sys.uuid": "",
     "sys.sn": "",
@@ -50,43 +50,43 @@
     "sys.version": "",
     "sys.appVersion": "vf105_v11_access_2.0.0",
     "sys.releaseTime": "2024-09-13 09:52:00",
-    "sys.heart_en": 0, //心跳1开 0 关
+    "sys.heart_en": 0, // Heartbeat 1 on 0 off
     "sys.heart_time": 30,
-    "sys.nfc": 1, //1开 0 关    刷卡开关
-    "sys.pwd": 1, //1开 0 关    密码开门开关
-    "sys.strangerImage": 1, //1开 0 关   陌生人保存图片开关
-    "sys.accessImageType": 1, //1人脸 0 全景   通行图片类型
-    "sys.com_passwd": "1234567887654321", // 配置码密码校验
-    //云证开关 3:云证获取 1:物理卡号
+    "sys.nfc": 1, // 1 on 0 off Card swipe switch
+    "sys.pwd": 1, // 1 on 0 off Password door opening switch
+    "sys.strangerImage": 1, // 1 on 0 off Stranger image save switch
+    "sys.accessImageType": 1, // 1 face 0 panorama Access image type
+    "sys.com_passwd": "1234567887654321", // Configuration code password check
+    // Cloud ID switch 3: Cloud ID acquisition 1: Physical card number
     "sys.nfcIdentityCardEnable": 1,
-    "sys.interval": 1000, //扫码间隔模式间隔时间
+    "sys.interval": 1000, // Scanning interval time
     "access.offlineAccessNum": 2000,
     "access.relayTime": 2000,
     "access.tamperAlarm": 1,
-    // 熄屏时间，单位分钟，0从不
+    // Screen off time, unit minutes, 0 never
     "base.screenOff": 0,
-    // 屏幕保护，单位分钟，0从不
+    // Screen saver, unit minutes, 0 never
     "base.screensaver": 0,
-    //屏幕亮度
+    // Screen brightness
     "base.brightness": 70,
-    //自动调节亮度  1 自动调节
+    // Automatic brightness adjustment 1 Automatic adjustment
     "base.brightnessAuto": 1,
-    //音量
+    // Volume
     "base.volume": 50,
-    // ip 显示  1 显示 0 隐藏
+    // IP display 1 Show 0 Hide
     "base.showIp": 1,
-    // sn 显示  1 显示 0 隐藏
+    // SN display 1 Show 0 Hide
     "base.showSn": 1,
-    //小程序码 显示  1 显示 0 隐藏
+    // Mini-program code display 1 Show 0 Hide
     "base.showProgramCode": 1,
-    //云证功能菜单 显示  1 显示 0 隐藏
+    // Cloud ID feature menu display 1 Show 0 Hide
     "base.showIdentityCard": 1,
-    // 0: 标准模式 1: 简约模式
+    // 0: Standard mode 1: Simple mode
     "base.appMode": 1,
-    // 白色补光灯亮度
+    // White fill light brightness
     "base.luminanceWhite": 80,
-    // 红外补光灯亮度
+    // Infrared fill light brightness
     "base.luminanceNir": 80,
-    // 0:wifi 版本  1:4G版本  2:以太网版本 默认 3未读取状态
-    "sys.devType": 0,
+    // 0: WiFi version 1: 4G version 2: Ethernet version Default 3 Unread state
+    "sys.devType": 0
 }

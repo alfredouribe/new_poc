@@ -52,10 +52,10 @@ screen.screenSize = {
     height: 1280
 }
 
-// ui上下文
+// UI context
 const context = {}
 
-// 初始化方法，在main.js中调用，只允许调用一次
+// Initialization method, called in main.js, only allowed to be called once
 screen.init = function () {
     const loadMethod = dxui.loadMain
     dxui.loadMain = function (view) {
@@ -68,7 +68,7 @@ screen.init = function () {
     }
 
     dxui.init({ orientation: 0 }, context);
-    // 初始化所有组件
+    // Initialize all components
     pinyin.init(800, 400)
 
     viewUtils.confirmInit()
@@ -108,26 +108,26 @@ screen.init = function () {
     dataCapacityInfoView.init()
     recordQueryDetailView.init()
 
-    // 设置语言
+    // Set language
     // i18n.setLanguage("en-US")
     i18n.setLanguage(config.get("base.language"))
 
     dxui.loadMain(mainView.screenMain)
     // dxui.loadMain(networkSettingView.screenMain)
 
-    // 启动屏保计时器
+    // Start screen saver timer
     idleTimerStart()
 
-    // bus事件
+    // Bus events
     busEvents()
 
-    // 实时获取点击坐标
+    // Real-time acquisition of click coordinates
     getClickPoint()
 
-    // 隐藏键盘
+    // Hide keyboard
     hidePinyin()
 
-    // 人脸跟踪框
+    // Face tracking box
     faceTrackingBox()
 }
 
@@ -137,7 +137,7 @@ function faceTrackingBox() {
         try {
             if (data) {
                 data = JSON.parse(data)
-                // 最大10个人
+                // Maximum 10 people
                 if (data.type == "track" && data.faces.length <= 10) {
                     for (let i = 0; i < data.faces.length; i++) {
                         let item = data.faces[i]
@@ -155,7 +155,7 @@ function faceTrackingBox() {
 let changedClickPoint
 let lastClickPoint = { x: 0, y: 0 }
 let clickPoint
-// 实时获取点击坐标
+// Real-time acquisition of click coordinates
 function getClickPoint() {
     const indev = NativeObject.APP.NativeComponents.NativeIndev
     std.setInterval(() => {
@@ -178,7 +178,7 @@ function hidePinyin() {
     let showPoint
     const hideMethod = pinyin.hide
     const showMethod = pinyin.show
-    // 加锁
+    // Lock
     let lock = false
     pinyin.hide = function (isForce) {
         if (isForce) {
@@ -223,13 +223,13 @@ class ScreenManager {
             screenOff: null
         };
 
-        // 默认配置
+        // Default configuration
         this.config = {
-            screenSaverDelay: 0, // 屏保延迟（毫秒）
-            screenOffDelay: 0    // 熄屏延迟（毫秒）
+            screenSaverDelay: 0, // Screen saver delay (milliseconds)
+            screenOffDelay: 0    // Screen off delay (milliseconds)
         };
 
-        // 回调函数
+        // Callbacks
         this.callbacks = {
             onScreenSaverStart: callbacks.onScreenSaverStart || (() => { }),
             onScreenSaverEnd: callbacks.onScreenSaverEnd || (() => { }),
@@ -240,16 +240,16 @@ class ScreenManager {
         this.resetTimers = this.resetTimers.bind(this);
     }
 
-    // 配置时间
+    // Configure time
     configure({ screenSaverDelay = 0, screenOffDelay = 0 }) {
         this.config.screenSaverDelay = screenSaverDelay;
         this.config.screenOffDelay = screenOffDelay;
         this.resetTimers();
     }
 
-    // 重置定时器
+    // Reset timers
     resetTimers() {
-        // 清除现有定时器
+        // Clear existing timers
         if (this.timers.screenSaver) {
             std.clearTimeout(this.timers.screenSaver);
         }
@@ -257,17 +257,17 @@ class ScreenManager {
             std.clearTimeout(this.timers.screenOff);
         }
 
-        // 退出当前状态
+        // Exit current state
         this.exitScreenStates();
 
-        // 设置新的定时器
+        // Set new timers
         if (this.config.screenOffDelay > 0) {
             this.timers.screenOff = std.setTimeout(() => {
                 this.enterScreenOff();
             }, this.config.screenOffDelay);
         }
 
-        // 只有当熄屏时间大于屏保时间时才设置屏保定时器
+        // Only set screen saver timer if screen off time is greater than screen saver time
         if (this.config.screenSaverDelay > 0 &&
             (this.config.screenSaverDelay < this.config.screenOffDelay || this.config.screenOffDelay == 0)) {
             this.timers.screenSaver = std.setTimeout(() => {
@@ -276,7 +276,7 @@ class ScreenManager {
         }
     }
 
-    // 进入屏保状态
+    // Enter screen saver state
     enterScreenSaver() {
         const mapUI = dxMap.get("UI")
         if (!mapUI.get("isScreenOff")) {
@@ -285,7 +285,7 @@ class ScreenManager {
         }
     }
 
-    // 进入熄屏状态
+    // Enter screen off state
     enterScreenOff() {
         const mapUI = dxMap.get("UI")
         mapUI.put("isScreenOff", true)
@@ -293,13 +293,13 @@ class ScreenManager {
         this.callbacks.onScreenOff();
     }
 
-    // 退出所有屏幕状态
+    // Exit all screen states
     exitScreenStates() {
         const mapUI = dxMap.get("UI")
         const previousState = { isScreenOff: mapUI.get("isScreenOff"), isScreenSaver: mapUI.get("isScreenSaver") };
         mapUI.put("isScreenOff", false)
         mapUI.put("isScreenSaver", false)
-        // 如果状态发生改变，触发相应回调
+        // Trigger corresponding callbacks if the state has changed
         if (previousState.isScreenSaver) {
             this.callbacks.onScreenSaverEnd();
         }
@@ -308,13 +308,13 @@ class ScreenManager {
         }
     }
 
-    // 获取当前状态
+    // Get current state
     getState() {
         const mapUI = dxMap.get("UI")
         return { isScreenOff: mapUI.get("isScreenOff"), isScreenSaver: mapUI.get("isScreenSaver") };
     }
 
-    // 清理资源
+    // Clean up resources
     destroy() {
         if (this.timers.screenSaver) {
             std.clearTimeout(this.timers.screenSaver);
@@ -327,7 +327,7 @@ class ScreenManager {
 
 let screenManager
 function idleTimerStart() {
-    // 创建实例，传入回调函数
+    // Create instance, passing callbacks
     screenManager = new ScreenManager({
         onScreenSaverStart: () => {
             screen.enterIdle()
@@ -348,15 +348,15 @@ function idleTimerStart() {
         }
     });
 
-    // 配置时间（毫秒）
+    // Configure time (milliseconds)
     screenManager.configure({
-        // screenSaverDelay: 10000,  // 屏保
-        // screenOffDelay: 5000     // 熄屏
-        screenSaverDelay: config.get("base.screensaver") * 60 * 1000,  // 屏保
-        screenOffDelay: config.get("base.screenOff") * 60 * 1000     // 熄屏
+        // screenSaverDelay: 10000,  // Screen saver
+        // screenOffDelay: 5000     // Screen off
+        screenSaverDelay: config.get("base.screensaver") * 60 * 1000,  // Screen saver
+        screenOffDelay: config.get("base.screenOff") * 60 * 1000     // Screen off
     });
 
-    // 检测用户触摸
+    // Detect user touch
     let touchCount = 0
     std.setInterval(() => {
         let count = dxui.Utils.GG.NativeDisp.lvDispGetInactiveTime()
@@ -369,16 +369,17 @@ function idleTimerStart() {
 
 screen.screenManagerRefresh = function () {
     screenManager.configure({
-        screenSaverDelay: config.get("base.screensaver") * 60 * 1000,  // 屏保
-        screenOffDelay: config.get("base.screenOff") * 60 * 1000     // 熄屏
+        screenSaverDelay: config.get("base.screensaver") * 60 * 1000,  // Screen saver
+        screenOffDelay: config.get("base.screenOff") * 60 * 1000     // Screen off
     });
     screenManager.resetTimers();
 }
 
 let enterIdleTimer
-// 进入屏保
+// Enter screen saver
 screen.enterIdle = function () {
-    // 延迟1秒，防止进入屏保和退出屏保同时触发，1秒内没有触发退出屏保，则认为进入屏保
+    // Delay 1 second to prevent entering and exiting screen saver from triggering simultaneously.
+    // If exit screen saver is not triggered within 1 second, it is considered to have entered screen saver.
     enterIdleTimer = std.setTimeout(() => {
         if (idleView.screenMain.isHide()) {
             viewUtils.confirmClose()
@@ -389,7 +390,7 @@ screen.enterIdle = function () {
     }, 1000)
 }
 
-// 退出屏保
+// Exit screen saver
 screen.exitIdle = function (isSelf) {
     if (enterIdleTimer) {
         std.clearTimeout(enterIdleTimer)
@@ -407,15 +408,15 @@ screen.loop = function () {
     return dxui.handler()
 }
 
-//云证激活 0 成功 非0失败
+// Cloud ID activation 0 Success Non-0 Failure
 screen.nfcIdentityCardActivation = function (code) {
     return driver.eid.active(config.get("sys.sn"), config.get("sys.appVersion"), config.get("sys.mac"), code);
 
 }
 
-// 删除人员
+// Delete user
 screen.deleteUser = function (user) {
-    // TODO删除人员
+    // TODO Delete user
     sqliteService.d1_person.deleteByUserId(user.userId)
     sqliteService.d1_permission.deleteByUserId(user.userId)
     sqliteService.d1_voucher.deleteByUserId(user.userId)
@@ -425,22 +426,22 @@ screen.deleteUser = function (user) {
 }
 
 screen.updateUser = function (user) {
-    //修改人员信息
+    // Modify user information
     let res = sqliteService.d1_person.updatenameAndExtraByUserId(user.userId, user.name, JSON.stringify({ type: user.type, idCard: user.idCard }))
     if (res != 0) {
         return false
     }
-    //处理凭证
+    // Handle credentials
     let ret
     if (user.pwd) {
-        //判断库表是否存在这个凭证
+        // Check if the credential exists in the database table
         let pwdData = sqliteService.d1_voucher.findByCodeAndType(user.pwd, "400");
         if (pwdData.length > 0 && pwdData[0].userId != user.userId) {
-            //存在不能添加返回失败
-            log.info("密码重复");
+            // If it exists, cannot add, return failure
+            log.info("Password duplicate");
             return "localUserAddView.failPwdRepeat"
         }
-        //查询是否有密码凭证有更新没有新增
+        // Check if there is a password credential, update if yes, add if no
         let countByuserIdAndType = sqliteService.d1_voucher.findByuserIdAndType(user.userId, "400");
         if (countByuserIdAndType.length > 0) {
             ret = sqliteService.d1_voucher.updatecodeByuserIdAndtype(user.userId, "400", user.pwd)
@@ -448,25 +449,25 @@ screen.updateUser = function (user) {
                 return false
             }
         } else {
-            //新增一个
+            // Add a new one
             ret = sqliteService.d1_voucher.save({ keyId: std.genRandomStr(32), type: "400", code: user.pwd, userId: user.userId })
             if (ret != 0) {
                 return false
             }
         }
     } else {
-        //没有内容去数据库表删除一下
+        // If there is no content, delete it from the database table
         sqliteService.d1_voucher.deleteByuserIdAndtype(user.userId, "400")
     }
     if (user.card) {
-        //判断库表是否存在这个凭证
+        // Check if the credential exists in the database table
         let cardData = sqliteService.d1_voucher.findByCodeAndType(user.card, "200");
         if (cardData.length > 0 && cardData[0].userId != user.userId) {
-            //存在不能添加返回失败
-            log.info("卡重复");
+            // If it exists, cannot add, return failure
+            log.info("Card duplicate");
             return "localUserAddView.failCardRepeat"
         }
-        //查询是否有密码凭证有更新没有新增
+        // Check if there is a password credential, update if yes, add if no
         let countByuserIdAndType = sqliteService.d1_voucher.countByuserIdAndType(user.userId, "200");
         if (countByuserIdAndType > 0) {
             ret = sqliteService.d1_voucher.updatecodeByuserIdAndtype(user.userId, "200", user.card)
@@ -474,7 +475,7 @@ screen.updateUser = function (user) {
                 return false
             }
         } else {
-            //新增一个
+            // Add a new one
             ret = sqliteService.d1_voucher.save({ keyId: std.genRandomStr(32), type: "200", code: user.card, userId: user.userId })
 
             if (ret != 0) {
@@ -482,7 +483,7 @@ screen.updateUser = function (user) {
             }
         }
     } else {
-        //没有内容去数据库表删除一下
+        // If there is no content, delete it from the database table
         sqliteService.d1_voucher.deleteByuserIdAndtype(user.userId, "200")
     }
     if (user.face) {
@@ -490,41 +491,41 @@ screen.updateUser = function (user) {
         let findByuserIdAndType = sqliteService.d1_voucher.findByuserIdAndType(user.userId, "300");
         if (findByuserIdAndType.length <= 0) {
             let ret = driver.face.registerFaceByPicFile(user.userId, user.face)
-            log.info("2注册人脸,ret:", ret)
+            log.info("2 Register face, ret:", ret)
             if (ret != 0) {
                 return faceService.regErrorEnum.picture[ret + '']
             }
-            //注册成功后需要吧原来图片移动到 user 对应目录下
+            // After successful registration, move the original picture to the corresponding user directory
             let src = "/app/data/user/" + user.userId + "/register.jpg"
             std.ensurePathExists(src)
             common.systemBrief('mv ' + user.face + " " + src)
 
-            //新增一个
+            // Add a new one
             ret = sqliteService.d1_voucher.save({ keyId: std.genRandomStr(32), type: "300", code: src, userId: user.userId })
             if (ret != 0) {
                 return false
             }
         } else {
-            //原来有又传入 先删除后新增
+            // If it existed before and new face is provided, delete the old one first, then add the new one
             if (findByuserIdAndType[0].code != user.face) {
-                //删除老人脸
+                // Delete old face
                 driver.face.delete(user.userId)
-                //注册新人脸
+                // Register new face
                 let res = driver.face.registerFaceByPicFile(user.userId, user.face)
-                log.info("3注册人脸,res:", res)
+                log.info("3 Register face, res:", res)
                 if (res != 0) {
                     return faceService.regErrorEnum.picture[res + '']
                 }
                 let src = "/app/data/user/" + user.userId + "/register.jpg"
                 std.ensurePathExists(src)
-                //把临时目录人脸移动到 user 对应的文件夹中
+                // Move the temporary directory face to the corresponding user folder
                 common.systemBrief('mv ' + user.face + " " + src)
                 ret = sqliteService.d1_voucher.updatecodeAndExtraByuserIdAndtype(user.userId, "300", src, JSON.stringify({ faceType: 0 }))
 
             }
         }
     } else {
-        //没有内容去数据库表删除一下
+        // If there is no content, delete it from the database table
         sqliteService.d1_voucher.deleteByuserIdAndtype(user.userId, "300")
         driver.face.delete(user.userId)
         common.systemBrief("rm -rf /app/data/user/" + user.userId)
@@ -533,22 +534,22 @@ screen.updateUser = function (user) {
     return true
 }
 
-// 新增人员
+// Add user
 screen.insertUser = async function (user) {
-    //开始处理凭证
+    // Start handling credentials
     const saveVoucher = async (type, code) => {
         if (type == "200") {
             let cardData = sqliteService.d1_voucher.findByCodeAndType(code, "200");
             if (cardData.length > 0 && cardData[0].userId != user.userId) {
-                //存在不能添加返回失败
-                log.info("卡重复");
+                // If it exists, cannot add, return failure
+                log.info("Card duplicate");
                 return "localUserAddView.failCardRepeat"
             }
         }
-        // 当 type 为 "300" 时，首先调用特定方法检查是否可以继续保存凭证
+        // When type is "300", first call a specific method to check if the credential can be saved
         if (type === "300") {
-            let preCheckResult = await preSaveCheck(code); // 假设这是您提到的需要调用的方法
-            if (preCheckResult !== true) { // 如果预检查不通过，则直接返回 false
+            let preCheckResult = await preSaveCheck(code); // Assuming this is the method you mentioned needs to be called
+            if (preCheckResult !== true) { // If pre-check fails, return directly
                 return preCheckResult;
             }
             code = "/app/data/user/" + user.userId + "/register.jpg"
@@ -557,8 +558,8 @@ screen.insertUser = async function (user) {
         if (type == "400") {
             let pwdData = sqliteService.d1_voucher.findByCodeAndType(code, "400");
             if (pwdData.length > 0 && pwdData[0].userId != user.userId) {
-                //存在不能添加返回失败
-                log.info("密码重复");
+                // If it exists, cannot add, return failure
+                log.info("Password duplicate");
                 return "localUserAddView.failPwdRepeat"
             }
         }
@@ -575,7 +576,7 @@ screen.insertUser = async function (user) {
         });
 
         if (voucherRet != 0) {
-            // 如果凭证保存失败，则删除已保存的用户信息及可能已保存的其他凭证
+            // If credential saving fails, delete the saved user information and possibly other saved credentials
             await sqliteService.d1_person.deleteByUserId(user.userId);
             await sqliteService.d1_voucher.deleteByUserId(user.userId);
             return false;
@@ -584,11 +585,11 @@ screen.insertUser = async function (user) {
     };
     async function preSaveCheck(code) {
         let ret = driver.face.registerFaceByPicFile(user.userId, code)
-        log.info("1注册人脸,ret:", ret)
+        log.info("1 Register face, ret:", ret)
         if (ret != 0) {
             return faceService.regErrorEnum.picture[ret + '']
         }
-        //注册成功后需要吧原来图片移动到 user 对应目录下
+        // After successful registration, move the original picture to the corresponding user directory
         let src = "/app/data/user/" + user.userId + "/register.jpg"
         std.ensurePathExists(src)
         common.systemBrief('mv ' + code + " " + src)
@@ -602,8 +603,8 @@ screen.insertUser = async function (user) {
 
 
     if (success === true) {
-        //{"id":"423","userId":"423","name":"微光互联","idCard":"123","pwd":"251574","card":"123"}
-        //保存人员信息
+        //{"id":"423","userId":"423","name":"Weiguang Interconnect","idCard":"123","pwd":"251574","card":"123"}
+        // Save user information
         let personRet = await sqliteService.d1_person.save({
             userId: user.userId,
             name: user.name,
@@ -613,7 +614,7 @@ screen.insertUser = async function (user) {
             sqliteService.d1_voucher.deleteByUserId(user.userId);
             return "localUserAddView.failRepeat"
         }
-        //新增一条永久权限
+        // Add a permanent permission entry
         sqliteService.d1_permission.save({ permissionId: user.userId, userId: user.userId, timeType: 0 })
     } else {
         await sqliteService.d1_voucher.deleteByUserId(user.userId);
@@ -623,7 +624,7 @@ screen.insertUser = async function (user) {
 
 }
 
-// 获取本地人员信息
+// Get local user information
 screen.getVoucher = function (userId) {
 
     let person = sqliteService.d1_person.find({ userId: userId });
@@ -658,21 +659,21 @@ screen.getUsers = function (page = 0, size = 6, userId, name) {
             user.id = user.userId
             return { data: [user], totalPage: 1, totalSize: 1, currentPage: 1 }
         }
-        // 用户姓名可能重复
+        // User names may be duplicated
         let users = sqliteService.d1_person.findByName(name)
         if (users && users.length > 0) {
             users.map(v => {
                 v.id = v.userId
             })
             function chunkArray(arr, size) {
-                // 如果数组为空或者大小为零，返回空数组
+                // If the array is empty or size is zero, return an empty array
                 if (arr.length === 0 || size <= 0) {
                     return [];
                 }
                 const result = [];
-                // 使用循环遍历数组，并按照大小切割
+                // Use a loop to traverse the array and slice it by size
                 for (let i = 0; i < arr.length; i += size) {
-                    result.push(arr.slice(i, i + size));  // slice 截取指定范围的元素
+                    result.push(arr.slice(i, i + size));  // slice extracts elements within the specified range
                 }
                 return result;
             }
@@ -686,101 +687,101 @@ screen.getUsers = function (page = 0, size = 6, userId, name) {
     if (users.length > 0) {
         users.forEach(element => { element.id = element.userId });
     }
-    // 总页数
+    // Total pages
     let totalPage = Math.ceil(userCount / size)
     return { data: users, totalPage: totalPage, totalSize: userCount, currentPage: page + 1 }
 }
 
-// 获取通行记录
+// Get access records
 screen.getPassRecord = function (page = 0, size = 6) {
     let passCount = sqliteService.d1_pass_record.count()
     let datas = sqliteService.d1_pass_record.findOrderByTimeDesc({ page, size })
-    // 总页数
+    // Total pages
     let totalPage = Math.ceil(passCount / size)
     return { data: datas, totalPage: totalPage, totalSize: passCount, currentPage: page + 1 }
 }
 
-// 人脸录入开始，UI控制
+// Face enrollment start, UI control
 screen.faceEnterStart = function (userId) {
     dxMap.get("UI").put("faceEnterStart", userId)
     driver.face.status(1)
     driver.face.mode(1)
 }
 
-// 人脸录入结束，UI控制
+// Face enrollment end, UI control
 screen.faceEnterEnd = function () {
     dxMap.get("UI").del("faceEnterStart")
     driver.face.status(0)
     // driver.face.mode(0)
 }
 
-// 获取卡号UI控制
+// Get card number start UI control
 screen.getCardStart = function () {
     dxMap.get("UI").put("getCardStart", true)
 }
 
-// 获取卡号结束UI控制
+// Get card number end UI control
 screen.endCardEnd = function () {
     dxMap.get("UI").del("getCardStart")
 }
 
-// 开启人脸识别
+// Start face recognition
 screen.faceRecgStart = function () {
     driver.face.status(1)
     driver.face.mode(0)
 }
 
-// 人脸识别暂停
+// Face recognition pause
 screen.faceRecgPause = function () {
     driver.face.status(0)
 }
 
-// 人脸录入结果
+// Face enrollment result
 screen.faceEnterResult = function (facePic) {
     if (facePic) {
         faceEnterView.successFlag = true
-        // 成功，显示人脸照片
+        // Success, display face photo
         localUserAddView.addFace(facePic)
         dxui.loadMain(localUserAddView.screenMain)
         faceEnterView.backCb()
     } else {
-        // 失败，报错
+        // Failure, report error
         faceEnterView.timeout()
     }
 }
 
-//  非识别页面人脸认证开始，UI控制
+// Face authentication start for non-recognition page, UI control
 screen.faceAuthStart = function () {
     dxMap.get("UI").put("faceAuthStart", "Y")
     driver.face.status(1)
     driver.face.mode(0)
 }
 
-// 非识别页面人脸认证结束，UI控制
+// Face authentication end for non-recognition page, UI control
 screen.faceAuthEnd = function () {
     dxMap.get("UI").del("faceAuthStart")
     driver.face.status(0)
 }
 
-// 非识别页面人脸认证结果
+// Face authentication result for non-recognition page
 screen.faceAuthResult = function (bool) {
     if (bool) {
-        // 成功，进入设置菜单
+        // Success, enter settings menu
         driver.alsa.play(`/app/code/resource/${config.get("base.language") == "CN" ? "CN" : "EN"}/wav/recg_s.wav`)
         dxui.loadMain(configView.screenMain)
     } else {
-        // 失败，报错
+        // Failure, report error
         driver.alsa.play(`/app/code/resource/${config.get("base.language") == "CN" ? "CN" : "EN"}/wav/recg_f.wav`)
         identityVerificationView.statusPanel.fail()
     }
 }
 
-// 保存配置
+// Save configuration
 screen.saveConfig = function (configAll) {
     if (configAll && configAll.net) {
-        // 检查 ssid 和 psk 是否都存在
+        // Check if both ssid and psk exist
         if (configAll.net.ssid || configAll.net.psk) {
-            // 在这里添加你的额外操作
+            // Add your extra operations here
             bus.fire("setConfig", configAll)
             return true
         }
@@ -788,31 +789,31 @@ screen.saveConfig = function (configAll) {
     return configService.configVerifyAndSave(configAll)
 }
 
-// 获取配置
+// Get configuration
 screen.getConfig = function () {
     let config1 = config.getAll()
     return config1
 }
 
-//  密码通行
+// Password access
 screen.pwdAccess = function (pwd) {
-    // TODO完善通行逻辑
+    // TODO Improve access logic
     bus.fire("access", { data: { type: "400", code: pwd } })
 }
 
-//切换网络类型
+// Switch network type
 screen.switchNetworkType = function (data) {
     bus.fire("switchNetworkType", data)
 }
 
-//获取 wifi 列表
+// Get wifi list
 screen.netGetWifiSsidList = function () {
     bus.fire("netGetWifiSsidList")
 }
 
 screen.netWifiSsidList = function (data) {
     if (data.length == 0 && config.get("net.type") == 2) {
-        //无线网
+        // Wireless network
         std.setTimeout(() => {
             screen.netGetWifiSsidList()
         }, 1000)
@@ -822,19 +823,19 @@ screen.netWifiSsidList = function (data) {
     networkSettingView.wifiList.refresh()
 }
 
-//连接 wifi
+// Connect to wifi
 screen.netConnectWifiSsid = function (ssid, psk) {
     return driver.net.netConnectWifiSsid(ssid, psk)
 }
 
-//获取卡号
+// Get card number
 screen.getCard = function (card) {
     localUserAddView.cardBoxInput.text(card)
 }
 
-// bus事件
+// Bus events
 function busEvents() {
-    // 网络状态
+    // Network status
     bus.on('netStatus', (data) => {
         console.log(JSON.stringify(data));
         let type = config.get("net.type")
@@ -851,7 +852,7 @@ function busEvents() {
         }
         i18n.refreshObj(networkSettingView.netInfo[10].label)
     })
-    // mqtt连接状态
+    // mqtt connection status
     bus.on('mqttStatus', (data) => {
         if (data == "connected") {
             topView.mqttConnectState(true)
@@ -891,7 +892,7 @@ screen.cardReset = function (msg) {
     }
 }
 
-// 开始注册人脸
+// Start face registration
 screen.beginAddFace = function (data) {
     log.info('screen.beginAddFace', JSON.stringify(data));
 
@@ -901,7 +902,7 @@ screen.beginAddFace = function (data) {
 
     driver.alsa.play(`/app/code/resource/${config.get("base.language") == "CN" ? "CN" : "EN"}/wav/recognition_s.wav`)
     faceEnterView.statusPanel.success("faceEnterView.recogSuccess")
-    // 保存图片到本地   
+    // Save picture locally
     let src = `/app/data/user/register.jpg`
     common.systemBrief(`mv ${data.fileName} ${src}`)
     common.systemBrief(`rm -rf /app/data/user/temp/*`)
@@ -909,7 +910,7 @@ screen.beginAddFace = function (data) {
     screen.faceEnterResult(src)
 }
 
-// 通行成功/失败
+// Access success/failure
 screen.accessRes = function (bool) {
     if (bool) {
         mainView.statusPanel.success()
@@ -918,10 +919,10 @@ screen.accessRes = function (bool) {
     }
 }
 
-// 切换app模式
+// Switch app mode
 screen.appMode = function (mode) {
     if (mode == 0) {
-        // 切换到标准
+        // Switch to standard
         mainView.menuBtnBox.show()
         if (config.get("base.showProgramCode") == 1) {
             mainView.appBtnBox.show()
@@ -937,7 +938,7 @@ screen.appMode = function (mode) {
         }
         mainView.miniBkgBox.hide()
     } else if (mode == 1) {
-        // 切换到简洁模式
+        // Switch to simple mode
         mainView.miniBkgBox.show()
         if (config.get("base.showProgramCode") == 1) {
             mainView.minAppBtnImg.show()
@@ -956,10 +957,9 @@ screen.appMode = function (mode) {
 }
 
 /**
- * 
- * @param {object} data 坐标信息
- * @param {number} id face_id，用于关联识别姓名用
- * @param {bool} isLiving 是否活体
+ * * @param {object} data Coordinate information
+ * @param {number} id face_id, used to associate with recognition name
+ * @param {bool} isLiving Whether it is liveness
  */
 screen.trackUpdate = function (data, id, isLiving) {
     let item = mainView.trackFaces[0]
@@ -1012,7 +1012,7 @@ screen.trackUpdate = function (data, id, isLiving) {
     }
 }
 
-// 认证结果
+// Authentication result
 screen.trackResult = function (data) {
     for (let i = 0; i < 10; i++) {
         let ele = mainView.trackFaces[i]
